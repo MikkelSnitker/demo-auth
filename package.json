@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "dev": "npm run build &&  node --inspect dist/index",
+    "dev": "npm run build &&  node --inspect -r ./mock.js dist/index",
     "start": "node dist/index.js"
   },
   "devDependencies": {

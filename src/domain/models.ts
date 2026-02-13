@@ -4,6 +4,8 @@ export interface Client {
   redirectUris: string[]
   scopes: string[]
   refreshTokenLifetimeSeconds?: number
+  allowTokenExchange?: boolean
+  allowDelegation?: boolean
 }
 export interface AuthorizationCode {
   code: string
@@ -12,7 +14,7 @@ export interface AuthorizationCode {
   redirectUri: string
   scope: string[]
   codeChallenge: string
-  nonce?: string
+  nonce?: string | undefined;
   authTime: number
   expiresAt: number
 }
@@ -26,4 +28,6 @@ export interface RefreshToken {
   parentId?: string
   used: boolean
   revoked: boolean
+  act?: { sub: string } | undefined;
+  delegatedFrom?: string| undefined
 }
