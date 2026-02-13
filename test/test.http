@@ -1,0 +1,75 @@
+
+@baseUrl = http://localhost:4000
+@clientId = backend-service
+@clientSecret = backend-secret
+@redirectUri = http://localhost:3000/callback
+
+### ------------------------------------------------------------------
+### 1️⃣ Generate PKCE Code Verifier (manual step)
+### ------------------------------------------------------------------
+# You must generate a code_verifier and compute:
+# code_challenge = base64url(sha256(code_verifier))
+#
+# Example values (you can replace):
+@codeVerifier = zPAX05R1pL9YqPKQx1uNB_uXg8oF8_uYzMWpWqnwJtY
+@codeChallenge = zPAX05R1pL9YqPKQx1uNB_uXg8oF8_uYzMWpWqnwJtY
+
+### ------------------------------------------------------------------
+### 2️⃣ Authorization Request
+### ------------------------------------------------------------------
+# @no-redirect	
+GET {{baseUrl}}/authorize?response_type=code&client_id={{clientId}}&redirect_uri={{redirectUri}}&scope=openid%20offline_access&code_challenge={{codeChallenge}}&code_challenge_method=S256&state=test123
+
+### ------------------------------------------------------------------
+### 3️⃣ Exchange Authorization Code
+### ------------------------------------------------------------------
+# After running step 2, copy the `code` from the redirect URL
+@authCode = h5QQ-jPr5wj-vCX1HllACLB6mvw6BgO7tUMftBzIwow
+
+POST {{baseUrl}}/token
+Authorization: Basic {{clientId}}:{{clientSecret}}
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code&code={{authCode}}&redirect_uri={{redirectUri}}&code_verifier={{codeVerifier}}
+
+### ------------------------------------------------------------------
+### 4️⃣ Use Refresh Token
+### ------------------------------------------------------------------
+# Copy refresh_token from previous response
+@refreshToken = PASTE_REFRESH_TOKEN_HERE
+
+POST {{baseUrl}}/token
+Authorization: Basic {{clientId}}:{{clientSecret}}
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token&
+refresh_token={{refreshToken}}
+
+### ------------------------------------------------------------------
+### 5️⃣ Revoke Refresh Token
+### ------------------------------------------------------------------
+POST {{baseUrl}}/revoke
+Authorization: Basic {{clientId}}:{{clientSecret}}
+Content-Type: application/x-www-form-urlencoded
+
+token={{refreshToken}}
+
+### ------------------------------------------------------------------
+### 6️⃣ Try Refresh Again (Should Fail)
+### ------------------------------------------------------------------
+POST {{baseUrl}}/token
+Authorization: Basic {{clientId}}:{{clientSecret}}
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token&
+refresh_token={{refreshToken}}
+
+### ------------------------------------------------------------------
+### 7️⃣ Discovery Endpoint
+### ------------------------------------------------------------------
+GET {{baseUrl}}/.well-known/openid-configuration
+
+### ------------------------------------------------------------------
+### 8️⃣ JWKS Endpoint
+### ------------------------------------------------------------------
+GET {{baseUrl}}/.well-known/jwks.json
