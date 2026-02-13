@@ -5,7 +5,6 @@ export interface Client {
   scopes: string[]
   refreshTokenLifetimeSeconds?: number
 }
-
 export interface AuthorizationCode {
   code: string
   clientId: string
@@ -13,9 +12,10 @@ export interface AuthorizationCode {
   redirectUri: string
   scope: string[]
   codeChallenge: string
+  nonce?: string
+  authTime: number
   expiresAt: number
 }
-
 export interface RefreshToken {
   id: string
   clientId: string

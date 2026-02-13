@@ -1,6 +1,6 @@
 import { authCodes, refreshTokens, families } from '../infrastructure/stores/stores.js'
 import { OAuthError } from '../domain/errors.js'
-import { randomId, sha256 } from '../infrastructure/crypto/utils.js'
+import { computeAtHash, randomId, sha256 } from '../infrastructure/crypto/utils.js'
 import { signJwt } from '../infrastructure/crypto/jwt.js'
 import { generateKeyPairSync, createPublicKey } from 'crypto'
 
@@ -63,9 +63,24 @@ export function exchangeCode(client: any, params: any) {
 
     families.set(id, new Set([id]))
     refreshToken = id
-  }
+  } 
 
-  return { accessToken, refreshToken }
+  let idToken;
+  if (stored.scope.includes('openid')) {
+      idToken = signJwt({
+        iss: issuer,
+        sub: stored.userId,
+        aud: client.id,
+        iat: now,
+        exp: now + 3600,
+        auth_time: stored.authTime,
+        at_hash: computeAtHash(accessToken),
+        ...(stored.nonce ? { nonce: stored.nonce } : {})
+      }, privateKey, kid)
+  }
+  
+
+  return { accessToken, refreshToken,idToken }
 }
 
 export function exchangeRefresh(client: any, tokenId: string) {

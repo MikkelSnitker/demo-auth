@@ -15,6 +15,11 @@ export function sha256(input: string) {
   return base64url(createHash('sha256').update(input).digest())
 }
 
+export function computeAtHash(accessToken: string) {
+  const digest = createHash('sha256').update(accessToken).digest()
+  return base64url(digest.slice(0, digest.length / 2))
+}
+
 export function constantEqual(a: string, b: string) {
   const A = Buffer.from(a)
   const B = Buffer.from(b)
