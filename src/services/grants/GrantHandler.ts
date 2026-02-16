@@ -1,4 +1,5 @@
 import { Client } from '../../domain/models.js'
+import { TokenService } from '../services.js'
 
 export interface TokenRequest {
   client: Client
@@ -13,5 +14,5 @@ export interface TokenResponse {
 
 export interface GrantHandler {
   supports(grantType: string): boolean
-  handle(request: TokenRequest): Promise<TokenResponse>
+  handle(tokenService: TokenService, request: TokenRequest): Promise<TokenResponse>
 }

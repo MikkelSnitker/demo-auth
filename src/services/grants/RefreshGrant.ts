@@ -1,5 +1,5 @@
 import { GrantHandler, TokenRequest, TokenResponse } from './GrantHandler.js'
-import { exchangeRefresh } from '../services.js'
+import { TokenService } from '../services.js'
 import { OAuthError } from '../../domain/errors.js'
 
 export class RefreshGrant implements GrantHandler {
@@ -8,7 +8,7 @@ export class RefreshGrant implements GrantHandler {
     return grantType === 'refresh_token'
   }
 
-  async handle(request: TokenRequest): Promise<TokenResponse> {
+  async handle(tokenService: TokenService, request: TokenRequest): Promise<TokenResponse> {
 
     const { client, params } = request
     const refreshToken = params.get('refresh_token')
@@ -17,6 +17,6 @@ export class RefreshGrant implements GrantHandler {
       throw new OAuthError('invalid_request')
     }
 
-    return exchangeRefresh(client, refreshToken)
+    return tokenService.exchangeRefresh(client, refreshToken)
   }
 }

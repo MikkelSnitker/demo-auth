@@ -1,5 +1,5 @@
 import { GrantHandler, TokenRequest, TokenResponse } from './GrantHandler.js'
-import { exchangeCode } from '../services.js'
+import {TokenService } from '../services.js'
 import { OAuthError } from '../../domain/errors.js'
 
 export class AuthorizationCodeGrant implements GrantHandler {
@@ -8,7 +8,7 @@ export class AuthorizationCodeGrant implements GrantHandler {
     return grantType === 'authorization_code'
   }
 
-  async handle(request: TokenRequest): Promise<TokenResponse> {
+  async handle(tokenService: TokenService, request: TokenRequest): Promise<TokenResponse> {
 
     const { client, params } = request
 
@@ -20,7 +20,7 @@ export class AuthorizationCodeGrant implements GrantHandler {
       throw new OAuthError('invalid_request')
     }
 
-    return exchangeCode(client, {
+    return tokenService.exchangeCode(client, {
       code,
       redirect_uri: redirectUri,
       code_verifier: codeVerifier

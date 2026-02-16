@@ -1,5 +1,5 @@
 import { OAuthError } from "../../domain/errors.js"
-import { exchangeToken } from "../services.js"
+import { TokenService } from "../services.js"
 import { GrantHandler, TokenRequest, TokenResponse } from "./GrantHandler"
 
 
@@ -9,7 +9,7 @@ export class TokenExchangeGrant implements GrantHandler {
     return grantType === 'urn:ietf:params:oauth:grant-type:token-exchange'
   }
 
-  async handle(request: TokenRequest): Promise<TokenResponse> {
+  async handle(tokenService: TokenService, request: TokenRequest): Promise<TokenResponse> {
     const { client, params } = request
 
     if (!client.allowTokenExchange) {
@@ -39,7 +39,7 @@ export class TokenExchangeGrant implements GrantHandler {
       ? scopeParam.split(' ').filter(Boolean)
       : undefined
 
-    const result = exchangeToken(
+    const result = tokenService.exchangeToken(
       client,
       subjectToken,
       actor,

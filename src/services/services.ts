@@ -6,7 +6,6 @@ import { verifyJwt, validateAccessTokenClaims } from '../infrastructure/crypto/j
 import { generateKeyPairSync } from 'crypto'
 import type { Client, AuthorizationCode, RefreshToken } from '../domain/models.js'
 
-export const issuer = 'http://localhost:4000'
 
 const keys = generateKeyPairSync('rsa', {
   modulusLength: 2048,
@@ -31,7 +30,9 @@ interface AuthorizationCodeGrantParams {
   code_verifier: string
 }
 
-export function exchangeCode(
+export class TokenService {
+  constructor(public readonly issuer: string) {}
+   exchangeCode(
   client: Client,
   params: AuthorizationCodeGrantParams
 ): { accessToken: string; refreshToken?: string | undefined; idToken?: string | undefined } {
@@ -49,7 +50,7 @@ export function exchangeCode(
   authCodes.delete(params.code)
 
   const accessToken = signJwt({
-    iss: issuer,
+    iss: this.issuer,
     sub: stored.userId,
     aud: 'resource_server',
     iat: now,
@@ -80,7 +81,7 @@ export function exchangeCode(
   let idToken;
   if (stored.scope.includes('openid')) {
       idToken = signJwt({
-        iss: issuer,
+        iss: this.issuer,
         sub: stored.userId,
         aud: client.id,
         iat: now,
@@ -95,7 +96,7 @@ export function exchangeCode(
   return { accessToken, refreshToken, idToken }
 }
 
-export function exchangeRefresh(
+  exchangeRefresh(
   client: Client,
   tokenId: string
 ): { accessToken: string; refreshToken: string } {
@@ -141,7 +142,7 @@ export function exchangeRefresh(
   families.get(stored.rootId)?.add(newId)
 
   const accessToken = signJwt({
-    iss: issuer,
+    iss: this.issuer,
     sub: stored.userId,
     aud: 'resource_server',
     iat: now,
@@ -152,7 +153,7 @@ export function exchangeRefresh(
   return { accessToken, refreshToken: newId }
 }
 
-export function exchangeToken(
+  exchangeToken(
   client: Client,
   subjectToken: string,
   actor?: { sub: string, [claim: string]: unknown},
@@ -165,7 +166,7 @@ export function exchangeToken(
 
   const verified = verifyJwt<AccessTokenPayload>(subjectToken, publicKey)
   const payload = validateAccessTokenClaims(verified, {
-    expectedIssuer: issuer,
+    expectedIssuer: this.issuer,
     rejectDelegated: true
   })
 
@@ -199,7 +200,7 @@ export function exchangeToken(
   const jti = randomId()
 
   const accessToken = signJwt({
-    iss: issuer,
+    iss: this.issuer,
     sub: payload.sub,
     aud: payload.aud,
     iat: now,
@@ -232,4 +233,6 @@ export function exchangeToken(
   families.set(refreshId, new Set([refreshId]))
 
   return { accessToken, refreshToken: refreshId }
+}
+
 }

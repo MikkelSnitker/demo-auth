@@ -5,7 +5,7 @@ export interface Client {
   scopes: string[]
   refreshTokenLifetimeSeconds?: number
   allowTokenExchange?: boolean
-  allowDelegation?: boolean
+  //allowDelegation?: boolean
 }
 export interface AuthorizationCode {
   code: string

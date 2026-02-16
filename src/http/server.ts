@@ -1,6 +1,6 @@
-import { ServerResponse, IncomingMessage, createServer } from 'http'
+import { ServerResponse, createServer } from 'http'
 import { OAuthError } from '../domain/errors.js'
-import { createAuthorizationCode, exchangeCode, exchangeRefresh, issuer, publicKey, kid } from '../services/services.js'
+import { createAuthorizationCode, publicKey, kid, TokenService } from '../services/services.js'
 import { clients } from '../infrastructure/stores/stores.js'
 import { createPublicKey } from 'crypto'
 import { GrantHandler } from '../services/grants/GrantHandler.js'
@@ -10,7 +10,8 @@ import { TokenExchangeGrant } from '../services/grants/TokenExchangeGrant.js'
 
 
 export function startServer() {
-
+  const issuer = 'http://localhost:4000';
+  const tokenService = new TokenService(issuer);
   return createServer(async (req, res) => {
     try {
 
@@ -113,7 +114,7 @@ export function startServer() {
               throw new OAuthError('unsupported_grant_type')
             }
 
-            const result = await handler.handle({
+            const result = await handler.handle(tokenService, {
               client,
               params: searchParams
             })
